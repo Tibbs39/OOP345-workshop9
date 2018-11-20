@@ -1,10 +1,21 @@
+// Name:  Kenneth Yue
+// Seneca Student ID: 127932176
+// Seneca email:  kyue3@myseneca.ca
+// Date of completion: Nov 20, 2018
+//
+// I confirm that the content of this file is created by me,
+// with exception of the parts provided to me by my professor
+
+
 // Workshop 9 - Multi-Threading
 // SecureData.cpp
 
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cstring>
 #include <thread>
+#include <future>
 #include <functional>
 #include "SecureData.h"
 
@@ -65,9 +76,20 @@ namespace w9 {
 	{
 		// TODO: rewrite this function to use at least two threads
 		//         to encrypt/decrypt the text.
-		converter(text, key, nbytes, Cryptor());
 
+		// partition string (if odd number of bytes, 2nd partition gets the extra byte)
+		auto convert_p1 = std::bind(converter, std::ref(text), key, nbytes / 2 , Cryptor());
+		auto convert_p2 = std::bind(converter, std::ref(text) + nbytes / 2, key, nbytes / 2 + nbytes % 2, Cryptor());
+		//converter(text, key, nbytes, Cryptor());
+
+		std::thread t1(convert_p1);
+		std::thread t2(convert_p2);
+		
 		encoded = !encoded;
+		
+		
+		t1.join();
+		t2.join();
 	}
 
 	void SecureData::backup(const char* file) {
@@ -85,9 +107,7 @@ namespace w9 {
 
 			// TODO: write data into the binary file
 			//         and close the file
-			fout.write((char *) &nbytes, sizeof(nbytes));
 			fout.write(text, nbytes);
-			fout.write((char *) &encoded, sizeof(encoded));
 
 			fout.close();
 
@@ -99,15 +119,16 @@ namespace w9 {
 		std::ifstream fin(file, std::ios::binary);
 
 		if (!fin.good()) throw std::string("\n***Could not open file***\n");
-
-		fin.read((char *) &nbytes, sizeof(nbytes));
 		
+		fin.seekg(0, fin.end);
+		nbytes = (int)fin.tellg();
+		fin.seekg(0, fin.beg);
+
 		// TODO: - allocate memory here for the file content
 		text = new char[nbytes];
 
 		// TODO: - read the content of the binary file
 		fin.read(text, nbytes);
-		fin.read((char *) &encoded, sizeof(encoded));
 
 		fin.close();
 
