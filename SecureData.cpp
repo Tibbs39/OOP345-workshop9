@@ -77,19 +77,25 @@ namespace w9 {
 		// TODO: rewrite this function to use at least two threads
 		//         to encrypt/decrypt the text.
 
-		// partition string (if odd number of bytes, 2nd partition gets the extra byte)
-		auto convert_p1 = std::bind(converter, std::ref(text), key, nbytes / 2 , Cryptor());
-		auto convert_p2 = std::bind(converter, std::ref(text) + nbytes / 2, key, nbytes / 2 + nbytes % 2, Cryptor());
-		//converter(text, key, nbytes, Cryptor());
+		int part = nbytes / 3;
+		// partition string into 3 equal parts, any remaindering bytes go to partition 3
 
-		std::thread t1(convert_p1);
-		std::thread t2(convert_p2);
+		// partition 3
+		auto convert_p3 = std::bind(converter, text + part * 2, key, nbytes - (part * 2), Cryptor());
+		std::thread p3(convert_p3);
 		
+		// partition 2
+		auto convert_p2 = std::bind(converter, text + part, key, part , Cryptor());
+		std::thread p2(convert_p2);
+		
+		// use main thread for partition 1
+		converter(text, key, part, Cryptor());
+
+		// wait for partitions 2 and 3 to finish encoding
+		p2.join();
+		p3.join();
+
 		encoded = !encoded;
-		
-		
-		t1.join();
-		t2.join();
 	}
 
 	void SecureData::backup(const char* file) {
