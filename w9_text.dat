@@ -11,4 +11,4 @@ includes a review of one-dimensional arrays in both static and dynamic memory
 and shows how to allocate multi-dimensional arrays in both static and dynamic
 memory.  The description of classes reviews class definitions, introduces
 move-constructors and move-assignment operators and includes declarations of
-special members such as bit fields, class variables and class functions.
+special members such as bit fields, class variables and class functions.TT
