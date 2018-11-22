@@ -72,13 +72,14 @@ namespace w9 {
 			throw std::string("\n***No data stored***\n");
 	}
 
+	// STUDENT PORTION
 	void SecureData::code(char key)
 	{
-		// TODO: rewrite this function to use at least two threads
-		//         to encrypt/decrypt the text.
+		// this function to uses three threads (two child threads + main thread)
+		// to encrypt/decrypt the text.
 
-		int part = nbytes / 3;
 		// partition string into 3 equal parts, any remaindering bytes go to partition 3
+		int part = nbytes / 3;
 
 		// partition 3
 		auto convert_p3 = std::bind(converter, text + part * 2, key, nbytes - (part * 2), Cryptor());
@@ -89,6 +90,9 @@ namespace w9 {
 		std::thread p2(convert_p2);
 		
 		// use main thread for partition 1
+		/* this was added because it felt inefficient to have the main thread doing nothing
+		   while waiting on the other two threads
+		*/
 		converter(text, key, part, Cryptor());
 
 		// wait for partitions 2 and 3 to finish encoding
@@ -105,23 +109,21 @@ namespace w9 {
 			throw std::string("\n***Data is not encoded***\n");
 		else
 		{
-			// TODO: open a binary file for writing
+			// STUDENT PORTION
+			// open a binary file for writing
 			std::ofstream fout(file, std::ios::binary);
 
 			if (!fout.good()) throw std::string("\n***Could not open file***\n");
 
-
-			// TODO: write data into the binary file
-			//         and close the file
+			// write data into the binary file and close the file
 			fout.write(text, nbytes);
-
 			fout.close();
-
 		}
 	}
 
 	void SecureData::restore(const char* file, char key) {
-		// TODO: open binary file for reading
+		// STUDENT PORTION
+		// open binary file for reading
 		std::ifstream fin(file, std::ios::binary);
 
 		if (!fin.good()) throw std::string("\n***Could not open file***\n");
@@ -130,13 +132,15 @@ namespace w9 {
 		nbytes = (int)fin.tellg();
 		fin.seekg(0, fin.beg);
 
-		// TODO: - allocate memory here for the file content
+		// allocate memory here for the file content
 		text = new char[nbytes];
 
-		// TODO: - read the content of the binary file
+		// read the content of the binary file
 		fin.read(text, nbytes);
 
 		fin.close();
+
+		// end of STUDENT PORTION
 
 		*ofs << "\n" << nbytes << " bytes copied from binary file "
 			<< file << " into memory.\n";
