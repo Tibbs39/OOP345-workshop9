@@ -10,6 +10,7 @@ This small program requires 3 arguments.
 1. The original text file, in this repository, it is w9_text.dat.
 2. The output file name.
 3. The key to be used for encoding and decoding.
+
 Example:
 ```./ws w9_text.dat w9_encoded.dat C```
 
